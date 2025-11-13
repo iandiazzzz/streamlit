@@ -47,7 +47,7 @@ st.markdown("""
 [data-testid="stSidebar"] {
     top: 0 !important;
     height: 100vh !important;
-    background-color: #ffffff !important;
+    background-color: #eef2f9 !important;
     border-right: 1px solid #ddd !important;
     z-index: 999 !important;
     padding: 0 !important;
@@ -145,7 +145,8 @@ def render_page_title(title, icon=""):
 # -------------------------------------------------
 with st.sidebar:
     st.image("PET.png", width=200)
-    menu = ["Início", "Atividades", "Cronograma", "Indicadores", "Detalhes das Atividades"]
+    # ADICIONE A NOVA PÁGINA AQUI
+    menu = ["Início", "Atividades", "Cronograma", "Indicadores", "Detalhes das Atividades", "Desempenho Alunos"]
     pagina = st.radio("Navegação", menu, label_visibility="collapsed")
 
 # -------------------------------------------------
@@ -161,6 +162,17 @@ atividades = [
 df = pd.DataFrame(atividades)
 df["Início"] = pd.to_datetime(df["Início"], dayfirst=True)
 df["Fim"] = pd.to_datetime(df["Fim"], dayfirst=True)
+
+dados_alunos = [
+    {"Nome": "Ana Silva", "Atividade": "Introdução à programação em Python", "Status": "Em Andamento", "Progresso (%)": 75, "Horas Registradas": 60},
+    {"Nome": "Ana Silva", "Atividade": "Apostilas de Física", "Status": "Concluído", "Progresso (%)": 100, "Horas Registradas": 100},
+    {"Nome": "Bruno Costa", "Atividade": "Introdução à programação em Python", "Status": "Em Andamento", "Progresso (%)": 50, "Horas Registradas": 50},
+    {"Nome": "Bruno Costa", "Atividade": "Físicos da Alegria", "Status": "Não Iniciado", "Progresso (%)": 0, "Horas Registradas": 0},
+    {"Nome": "Carla Dias", "Atividade": "Vídeo Aulas PET Física - UNIFAP", "Status": "Em Andamento", "Progresso (%)": 80, "Horas Registradas": 70},
+    {"Nome": "Carla Dias", "Atividade": "Iniciação Científica do PET Física", "Status": "Em Andamento", "Progresso (%)": 30, "Horas Registradas": 30},
+    {"Nome": "Carla Dias", "Atividade": "Apostilas de Física", "Status": "Em Andamento", "Progresso (%)": 20, "Horas Registradas": 20},
+]
+df_alunos = pd.DataFrame(dados_alunos)
 
 # -------------------------------------------------
 # Páginas
@@ -204,3 +216,48 @@ else:
         st.write(f"**Atividade:** {info['Atividade']}")
         st.write(f"**Carga Horária:** {info['Carga Horária']} horas")
         st.write(f"**Período:** {info['Início'].strftime('%d/%m/%Y')} - {info['Fim'].strftime('%d/%m/%Y')}")
+    elif pagina == "Desempenho Alunos":
+        # Usa sua função de título
+        render_page_title("Desempenho Individual", "📊")
+        
+        # 1. Filtro para selecionar o aluno
+        lista_alunos = df_alunos["Nome"].unique()
+        aluno_selecionado = st.selectbox("Selecione um Aluno:", lista_alunos)
+
+        # 2. Filtrar o DataFrame para mostrar dados apenas desse aluno
+        df_do_aluno = df_alunos[df_alunos["Nome"] == aluno_selecionado]
+
+        st.markdown(f"### Resumo de {aluno_selecionado}")
+
+        # 3. Mostrar KPIs (Indicadores) com st.metric
+        # Calcular os KPIs
+        total_atividades = df_do_aluno.shape[0]
+        progresso_medio = df_do_aluno["Progresso (%)"].mean()
+        horas_totais = df_do_aluno["Horas Registradas"].sum()
+
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Total de Atividades", f"{total_atividades}")
+        col2.metric("Progresso Médio", f"{progresso_medio:.1f}%")
+        col3.metric("Total de Horas", f"{horas_totais}h")
+
+        st.divider() # Adiciona uma linha divisória
+
+        # 4. Mostrar detalhes em tabela e gráfico
+        st.markdown(f"### Detalhes das Atividades")
+        st.dataframe(
+            df_do_aluno[["Atividade", "Status", "Progresso (%)", "Horas Registradas"]],
+            use_container_width=True
+        )
+
+        # 5. Gráfico de Progresso
+        st.markdown("### Gráfico de Progresso")
+        fig_progresso = px.bar(
+            df_do_aluno,
+            x="Atividade",
+            y="Progresso (%)",
+            color="Atividade",
+            title="Progresso por Atividade",
+            range_y=[0, 100] # Força a escala de 0 a 100
+        )
+        st.plotly_chart(fig_progresso, use_container_width=True)
+    # =================================================
