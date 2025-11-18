@@ -291,6 +291,24 @@ div[data-testid="stSidebar"] div[role="radiogroup"] > label.st-bq {
 [key="logout_btn"], [key="settings_btn"] {
     display: none !important;
 }
+/* ================================================= */
+/* === CORREÇÃO DEFINITIVA DO ESPAÇO FANTASMA NO MENU PRINCIPAL === */
+.stRadio > div[role="radiogroup"] > div:first-child {
+    display: none !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.stRadio > div[role="radiogroup"] > div:nth-child(2) {
+    margin-top: -8px !important;
+    padding-top: 0 !important;
+}
+
+.sidebar-title {
+    margin-bottom: 2px !important;
+    padding-bottom: 4px !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
