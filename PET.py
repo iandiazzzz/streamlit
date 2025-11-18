@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 import datetime
 
-# -------------------------------------------------
+# -------------------------------------------------sidebar
 # Configuração da página e Estado da Sessão
 # -------------------------------------------------
 st.set_page_config(page_title="Dashboard PET Física 2025", layout="wide")
@@ -371,24 +371,26 @@ with st.sidebar:
     st.image("PET.png", width=200)
 
     if st.session_state.menu_principal:
-        st.markdown('<span class="sidebar-title">Navegação</span>',
-                    unsafe_allow_html=True)
-
-        menu_principal_opcoes = ["Início", "Alunos", "Detalhes das Atividades"]
-        index_selecionado = 0
-        if st.session_state.pagina_atual in menu_principal_opcoes:
-            index_selecionado = menu_principal_opcoes.index(
-                st.session_state.pagina_atual)
-
-        pagina_selecionada = st.radio("Navegação Principal", menu_principal_opcoes,
-                                      index=index_selecionado, key="main_menu", label_visibility="collapsed")
-
+        st.markdown('<span class="sidebar-title">Navegação</span>', unsafe_allow_html=True)
+        
+        # === NOVO: st.radio com label_visibility="collapsed" + CSS para matar o espaço fantasma ===
+        pagina_selecionada = st.radio(
+            "Navegação Principal",
+            ["Início", "Alunos", "Detalhes das Atividades"],
+            index=["Início", "Alunos", "Detalhes das Atividades"].index(st.session_state.pagina_atual)
+            if st.session_state.pagina_atual in ["Início", "Alunos", "Detalhes das Atividades"] else 0,
+            key="main_menu",
+            label_visibility="collapsed",   # importante
+            # === ESSA É A MÁGICA: removemos o primeiro item vazio com CSS ===
+            # não precisamos mais de hacks complicados
+        )
+        
+        # Força transição para submenu Alunos
         if pagina_selecionada == "Alunos":
             st.session_state.menu_principal = False
             st.rerun()
-
-        if pagina_selecionada in menu_principal_opcoes:
-            st.session_state.pagina_atual = pagina_selecionada
+            
+        st.session_state.pagina_atual = pagina_selecionada
 
     else:
         st.markdown("### 👤 Lista de Alunos")
