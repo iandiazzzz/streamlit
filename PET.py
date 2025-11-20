@@ -321,7 +321,7 @@ def render_home_header():
     st.markdown("""
     <div class="home-header">
         <h1>
-            <span class="icon">⚛</span> Bem-vindo(a) ao Dashboard PET Física – UNIFAP
+            <span class="icon">⚛</span> Bem-vindo(a) ao Dashboard PET Física – UNIFAPppp
         </h1>
     </div>
     """, unsafe_allow_html=True)
