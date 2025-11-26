@@ -3,12 +3,12 @@ import pandas as pd
 import plotly.express as px
 import datetime
 
-# -------------------------------------------------sidebar
+# -------------------------------------------------
 # Configuração da página e Estado da Sessão
 # -------------------------------------------------
 st.set_page_config(page_title="Dashboard PET Física 2025", layout="wide")
 
-# Inicializa o estado de visualização do menu (True = Menu Principal)
+# Inicializa o estado de visualização do menu
 if 'menu_principal' not in st.session_state:
     st.session_state.menu_principal = True
 # Variável para armazenar a página atual
@@ -383,37 +383,45 @@ nomes_alunos_com_dados = df_alunos["Nome"].unique().tolist()
 nomes_alunos_com_dados.sort()
 
 # -------------------------------------------------
-# Sidebar Corrigida
+# Sidebar
 # -------------------------------------------------
 with st.sidebar:
     st.image("PET.png", width=200)
+    
+    # Opções do Menu Principal
+    opcoes_menu_principal = ["Início", "Alunos", "Detalhes das Atividades"]
 
     if st.session_state.menu_principal:
         st.markdown('<span class="sidebar-title">Navegação</span>', unsafe_allow_html=True)
         
-        # === NOVO: st.radio com label_visibility="collapsed" + CSS para matar o espaço fantasma ===
+        # Determina o índice atual, com fallback seguro para a primeira opção
+        try:
+            indice_atual_main = opcoes_menu_principal.index(st.session_state.pagina_atual)
+        except ValueError:
+            indice_atual_main = 0 
+        
+        # === st.radio para o Menu Principal ===
         pagina_selecionada = st.radio(
             "Navegação Principal",
-            ["Início", "Alunos", "Detalhes das Atividades"],
-            index=["Início", "Alunos", "Detalhes das Atividades"].index(st.session_state.pagina_atual)
-            if st.session_state.pagina_atual in ["Início", "Alunos", "Detalhes das Atividades"] else 0,
+            opcoes_menu_principal,
+            index=indice_atual_main,
             key="main_menu",
-            label_visibility="collapsed",   # importante
-            # === ESSA É A MÁGICA: removemos o primeiro item vazio com CSS ===
-            # não precisamos mais de hacks complicados
+            label_visibility="collapsed",
         )
         
-        # Força transição para submenu Alunos
+        # Lógica de Transição para o Submenu de Alunos
         if pagina_selecionada == "Alunos":
+            # Define o primeiro aluno da lista como a página inicial do submenu
+            st.session_state.pagina_atual = nomes_alunos_menu[0]
             st.session_state.menu_principal = False
             st.rerun()
-            
-        st.session_state.pagina_atual = pagina_selecionada
+        else:
+            st.session_state.pagina_atual = pagina_selecionada
 
-    else:
+    else: # Submenu de Alunos
         st.markdown("### 👤 Lista de Alunos")
 
-        # Contêiner para o botão com chave para CSS
+        # Botão Voltar ao Menu Principal
         with st.container(border=False):
             if st.button("⬅ Voltar ao Menu Principal", key="btn_voltar_menu"):
                 st.session_state.menu_principal = True
@@ -422,23 +430,26 @@ with st.sidebar:
 
         st.markdown('<div class="submenu-alunos">', unsafe_allow_html=True)
 
-        # Encontra o índice correto do aluno (se for um aluno)
+        # Determina o índice atual do aluno (limpa espaços extras antes da comparação)
         index_aluno = 0
         try:
-            # Usa strip() para garantir que espaços extras sejam ignorados na comparação
-            index_aluno = nomes_alunos_menu.index(
-                st.session_state.pagina_atual.strip())
+            # Encontra o índice na lista de alunos do menu
+            pagina_limpa = st.session_state.pagina_atual.strip()
+            nomes_limpos = [nome.strip() for nome in nomes_alunos_menu]
+            index_aluno = nomes_limpos.index(pagina_limpa)
         except ValueError:
-            # Força o índice 0 para o item "Angelo Haroldo", que será visualmente desativado pelo CSS
-            index_aluno = 0
+            # Se o valor atual da sessão não for um aluno válido, usa o primeiro
+            index_aluno = 0 
 
+        # === st.radio para o Submenu de Alunos ===
         pagina_selecionada_aluno = st.radio(
             "Selecione um Aluno",
-            nomes_alunos_menu,  # Apenas os nomes dos alunos
+            nomes_alunos_menu,
             index=index_aluno,
-            key="submenu_alunos",  # Chave específica para o CSS
+            key="submenu_alunos",
             label_visibility="collapsed")
 
+        # Garante que a página atual seja o nome do aluno selecionado (mantendo a string original)
         st.session_state.pagina_atual = pagina_selecionada_aluno
 
         st.markdown('</div>', unsafe_allow_html=True)
@@ -504,7 +515,7 @@ elif pagina == "Detalhes das Atividades":
 
     if not df_final.empty:
         colunas_tabela = ["Nome", "Status",
-                          "Progresso (%)", "Horas Registradas"]
+                            "Progresso (%)", "Horas Registradas"]
         if aluno_sel != "Todos os Alunos":
             colunas_tabela.remove("Nome")
 
@@ -583,8 +594,9 @@ elif pagina in nomes_alunos_menu:
         st.markdown(f"### Detalhes das Atividades")
         st.dataframe(
             df_do_aluno[["Atividade", "Status",
-                         "Progresso (%)", "Horas Registradas"]],
-            use_container_width=True
+                            "Progresso (%)", "Horas Registradas"]],
+            use_container_width=True,
+            hide_index=True # Adicionando hide_index para consistência e clareza
         )
 
         st.markdown("### Gráfico de Progresso")
@@ -600,3 +612,10 @@ elif pagina in nomes_alunos_menu:
     else:
         st.warning(
             f"Dados de desempenho para *{aluno_selecionado.strip()}* não encontrados no DataFrame df_alunos. Por favor, adicione as informações deste aluno ao seu dados_alunos no script para que o painel funcione.")
+
+elif pagina == "Alunos":
+    # Garante que a transição para o submenu inicie na página do primeiro aluno, não em "Alunos"
+    # Embora a lógica acima trate disso, essa checagem previne um estado inválido se o rerender for muito rápido
+    st.session_state.menu_principal = False
+    st.session_state.pagina_atual = nomes_alunos_menu[0]
+    st.rerun()
