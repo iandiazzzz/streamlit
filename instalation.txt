@@ -1,0 +1,15 @@
+# Passos para instalar com ambiente virtual (venv) e as devidas dependências
+
+1. instale o ambiente virtual na pasta:
+Abra o terminal do VSCode e escreva o seguinte:
+
+Para liberar o power sheel:
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+
+Para ativar o ambiente virtual:
+
+.\.venv\Scripts\activate
+
+2. instale as dependências com o pip:
+
+

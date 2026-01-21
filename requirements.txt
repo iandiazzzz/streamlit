@@ -1,0 +1,11 @@
+# Streamlit e suas dependências
+streamlit==1.38.0
+
+# Pandas (para manipulação de dados)
+pandas==2.2.3
+
+# Plotly (para gráficos interativos)
+plotly==5.24.1
+
+# Plotly Express (vem incluso no plotly, mas garantimos compatibilidade)
+plotly-express==0.4.1
